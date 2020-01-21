@@ -2,9 +2,9 @@
 token: MYSECRETTOKEN
 # poll interval
 interval: 2
-# max wait time for macro execution
 # retry interval, if not specified, no Telegram API retry is made on errors
 # retry-interval: 2
+# max wait time for macro execution
 wait: 60
 # reply_markdown inline_keyboard menu (array of arrays)
 # item format: macro:description
