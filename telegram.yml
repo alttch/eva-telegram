@@ -1,0 +1,13 @@
+# obtain token from https://telegram.me/BotFather
+token: MYSECRETTOKEN
+# poll interval
+interval: 2
+# max wait time for macro execution
+wait: 60
+# reply_markdown inline_keyboard menu (array of arrays)
+# item format: macro:description
+menu:
+  - - test:test macro
+    - test2:test macro2
+  - - lights_on:turn the lights on
+    - lights_off:turn the lights off
