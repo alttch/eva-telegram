@@ -15,7 +15,7 @@ Requires EVA ICS 3.3 or newer.
 * load extension:
 
 ```shell
-eva lm ext load tbot telegram
+eva lm ext load tbot telegram -y
 ```
 
 ## Macro execution
