@@ -45,7 +45,7 @@ Send broadcast message to all
     tbot_send('*', 'this is a test')
 ```
 
-Send image to users with API key "operator" and "operator2":
+Send image to users with API key IDs "operator" and "operator2":
 
 ```python
     with open('image.jpg', 'rb') as fh:
