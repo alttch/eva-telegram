@@ -40,8 +40,8 @@ import eva.apikey
 
 from eva.lm.extensions.generic import LMExt as GenericExt
 from eva.lm.extapi import log_traceback
-
 from eva.lm.extapi import ext_constructor
+from eva.lm.extapi import get_timeout
 
 from eva.lm.lmapi import api
 
@@ -69,6 +69,8 @@ class LMExt(GenericExt):
             self.tebot = mod.TeBot(interval=config.get('interval', 2),
                                    on_error=log_traceback)
             self.tebot.set_token(config['token'])
+            self.tebot.retry_interval = config.get('retry-interval')
+            self.tebot.timeout = get_timeout()
             self.wait = float(config.get('wait', 60))
             self.reply_markup = {'inline_keyboard': []}
             self.bot_help = ''
@@ -116,7 +118,7 @@ class LMExt(GenericExt):
             auth_info = 'To start enter valid API key'
         self.tebot.send(
             f'Usage:\n{self.bot_help}/logout - log out\n\n{auth_info}',
-            reply_markup=self.reply_markup)
+            reply_markup=self.reply_markup if key_id else None)
 
     def h_message(self, chat_id, text, **kwargs):
         with self.data_lock:
@@ -132,7 +134,8 @@ class LMExt(GenericExt):
                 with self.data_lock:
                     self.data['auth'][str(chat_id)] = key_id
                     self.data_modified = True
-                self.tebot.send(f'Registered API key: {key_id}')
+                self.tebot.send(f'Registered API key: {key_id}',
+                                reply_markup=self.reply_markup)
 
     def h_logout(self, chat_id, **kwargs):
         with self.data_lock:
@@ -198,6 +201,9 @@ class LMExt(GenericExt):
 
     def send_audio(self, apikey_id, *args, **kwargs):
         return self._send(self.tebot.send_audio, apikey_id, *args, **kwargs)
+
+    def send_document(self, apikey_id, *args, **kwargs):
+        return self._send(self.tebot.send_document, apikey_id, *args, **kwargs)
 
     def _format_rcpt_list(self, apikey_id):
         with self.data_lock:
