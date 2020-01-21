@@ -6,6 +6,8 @@ Requires EVA ICS 3.3 or newer.
 
 ## Install
 
+* install [tebot](https://pypi.org/project/tebot/) module
+
 * put *telegram.py* to */opt/eva/xc/extensions/*
 
 * put sample configuration file *telegram.yml* to */opt/eva/etc/*
