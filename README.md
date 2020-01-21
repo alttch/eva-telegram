@@ -8,7 +8,7 @@ Requires EVA ICS 3.3 or newer.
 
 * put *telegram.py* to */opt/eva/xc/extensions/*
 
-* put sample configuration file to */opt/eva/etc/*
+* put sample configuration file *telegram.yml* to */opt/eva/etc/*
 
 * modify sample configuration
 
