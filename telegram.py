@@ -73,13 +73,18 @@ class LMExt(GenericExt):
             self.tebot.timeout = get_timeout()
             self.wait = float(config.get('wait', 60))
             keyboard = []
-            self.reply_markup = {'inline_keyboard': keyboard}
+            inline_keyboard = []
+            self.reply_markup = {'inline_keyboard': inline_keyboard}
+            self.reply_markup_keyboard = {'keyboard': keyboard}
+            self.remove_keyboard = {'remove_keyboard': True}
             self.bot_commands = []
             self.bot_help = []
             self.bot_help_builtin = ['help - get help', 'logout - log out']
+            bot_help = set()
+            bot_commands = set()
             try:
-                menu = config['menu']
-                for row in menu:
+                inline = config.get('inline-keyboard', [])
+                for row in inline:
                     row_data = []
                     for col in row:
                         data, text = col.split(':', 1)
@@ -90,14 +95,24 @@ class LMExt(GenericExt):
                                 'text': text,
                                 'callback_data': f'/{data}'
                             })
-                        self.bot_help.append(f'{data} - {text}')
-                        self.bot_commands.append(data)
+                        bot_help.add(f'{data} - {text}')
+                        bot_commands.add(data)
+                    if row_data:
+                        inline_keyboard.append(row_data)
+                kbd = config.get('keyboard', [])
+                for row in kbd:
+                    row_data = []
+                    for command in row:
+                        row_data.append({
+                            'text': command,
+                        })
+                        bot_commands.add(command)
                     if row_data:
                         keyboard.append(row_data)
-                self.bot_commands = sorted(self.bot_commands)
-                self.bot_help = sorted(self.bot_help)
+                self.bot_commands = sorted(bot_commands)
+                self.bot_help = sorted(bot_help)
             except:
-                self.log_error('unable to parse menu')
+                self.log_error('unable to parse keyboards')
                 raise
             self.tebot.register_route(self.h_message, methods='message')
             self.tebot.register_route(self.h_start, path=['/start', '/help'])
@@ -124,34 +139,48 @@ class LMExt(GenericExt):
         if key_id:
             self._send_help(key_id)
         else:
-            self.tebot.send('Enter valid API key to start')
+            self.tebot.send('Enter valid API key to start',
+                            reply_markup=self.remove_keyboard)
 
     def _send_help(self, key_id):
         bot_help = ''.join([f'/{x}\n' for x in self.bot_help])
         bot_help_builtin = ''.join([f'/{x}\n' for x in self.bot_help_builtin])
-        self.tebot.send(f'Usage:\n\n{bot_help}\n{bot_help_builtin}\n' +
-                        f'current API key: {key_id}',
+        self.tebot.send(f'Usage:\n\n{bot_help}\n{bot_help_builtin}\n',
+                        reply_markup=self.reply_markup_keyboard)
+        self.tebot.send(f'current API key: {key_id}',
                         reply_markup=self.reply_markup)
 
     def h_getcommands(self, **kwargs):
         self.tebot.send('\n'.join(self.bot_help + self.bot_help_builtin))
 
     def h_message(self, chat_id, text, **kwargs):
-        with self.data_lock:
-            key_id = self.data['auth'].get(str(chat_id))
-        if key_id:
-            self.tebot.send(f'API key: <b>{key_id}</b>',
-                            reply_markup=self.reply_markup)
-        else:
-            key_id = eva.apikey.key_id(text.strip())
-            if key_id == 'unknown':
-                self.tebot.send(f'Invalid API key. Try again')
+        try:
+            with self.data_lock:
+                key_id = self.data['auth'].get(str(chat_id))
+            if key_id:
+                path = text.split(' ', 1)
+                if path[0] in self.bot_commands:
+                    try:
+                        query_string = path[1]
+                    except:
+                        query_string = None
+                    return self.h_command(chat_id, '/' + path[0], query_string,
+                                          **kwargs)
+                self.tebot.send(f'API key: <b>{key_id}</b>',
+                                reply_markup=self.reply_markup)
             else:
-                with self.data_lock:
-                    self.data['auth'][str(chat_id)] = key_id
-                    self.data_modified = True
-                self.tebot.send(f'Registered API key: {key_id}')
-                self._send_help(key_id)
+                key_id = eva.apikey.key_id(text.strip())
+                if key_id == 'unknown':
+                    self.tebot.send(f'Invalid API key. Try again',
+                                    reply_markup=self.remove_keyboard)
+                else:
+                    with self.data_lock:
+                        self.data['auth'][str(chat_id)] = key_id
+                        self.data_modified = True
+                    self.tebot.send(f'Registered API key: {key_id}')
+                    self._send_help(key_id)
+        except:
+            log_traceback()
 
     def h_logout(self, chat_id, **kwargs):
         with self.data_lock:
@@ -159,9 +188,11 @@ class LMExt(GenericExt):
                 del self.data['auth'][str(chat_id)]
                 self.data_modified = True
                 self.tebot.send(
-                    'API key unregistered. Enter new API key to continue')
+                    'API key unregistered. Enter new API key to continue',
+                    reply_markup=self.remove_keyboard)
             except KeyError:
-                self.tebot.send('API key not registered')
+                self.tebot.send('API key not registered',
+                                reply_markup=self.remove_keyboard)
             except:
                 log_traceback()
 
@@ -170,7 +201,8 @@ class LMExt(GenericExt):
             key_id = self.data['auth'].get(str(chat_id))
         if not key_id:
             self.tebot.send(
-                'Please enter valid API key before launching commands')
+                'Please enter valid API key before launching commands',
+                reply_markup=self.remove_keyboard)
             return
         k = eva.apikey.key_by_id(key_id)
         cmd = path[1:]

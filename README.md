@@ -73,8 +73,8 @@ as-is.
 
 ## Exclude command from the keyboard
 
-To exclude command from the inline keyboard, put dot before macro in "menu"
-section of the configuration.
+To exclude command from the inline keyboard, put dot before macro in
+"inline-keyboard" section of the configuration.
 
 ## Security
 
