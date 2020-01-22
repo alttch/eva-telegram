@@ -8,6 +8,7 @@ interval: 2
 wait: 60
 # reply_markdown inline_keyboard menu (array of arrays)
 # item format: macro:description
+# to hide command from menu, put dot before it
 menu:
   - - test:test macro
     - .test2:test macro2
