@@ -71,7 +71,7 @@ After log in, use */getcommands* command, go to [Telegram
 BotFather](https://telegram.me/BotFather), enter */setcommands* and paste it
 as-is.
 
-## Commands, hidden in inline keyboard
+## Exclude command from the keyboard
 
-To hide command in inline keyboard, put dot before macro in "menu" section of
-the configuration.
+To exclude command from the inline keyboard, put dot before macro in "menu"
+section of the configuration.
