@@ -73,8 +73,9 @@ class LMExt(GenericExt):
             self.tebot.timeout = get_timeout()
             self.wait = float(config.get('wait', 60))
             self.reply_markup = {'inline_keyboard': []}
-            self.bot_help = ''
             self.bot_commands = []
+            self.bot_help = []
+            self.bot_help_builtin = ['help - get help', 'logout - log out']
             try:
                 menu = config['menu']
                 for row in menu:
@@ -86,13 +87,16 @@ class LMExt(GenericExt):
                             'text': text,
                             'callback_data': f'/{data}'
                         })
-                        self.bot_help += f'/{data} - {text}\n'
+                        self.bot_help.append(f'{data} - {text}')
                         self.bot_commands.append(data)
+                self.bot_commands = sorted(self.bot_commands)
+                self.bot_help = sorted(self.bot_help)
             except:
                 self.log_error('unable to parse menu')
                 raise
             self.tebot.register_route(self.h_message, methods='message')
             self.tebot.register_route(self.h_start, path=['/start', '/help'])
+            self.tebot.register_route(self.h_getcommands, path='/getcommands')
             self.tebot.register_route(self.h_logout, path='/logout')
             self.tebot.register_route(self.h_command, methods='*')
             with self.data_lock:
@@ -113,12 +117,20 @@ class LMExt(GenericExt):
     def h_start(self, chat_id, **kwargs):
         key_id = self.data['auth'].get(str(chat_id))
         if key_id:
-            auth_info = f'current API key: {key_id}'
+            self._send_help(key_id)
         else:
-            auth_info = 'To start enter valid API key'
-        self.tebot.send(
-            f'Usage:\n{self.bot_help}/logout - log out\n\n{auth_info}',
-            reply_markup=self.reply_markup if key_id else None)
+            self.tebot.send('Enter valid API key to start')
+
+    def _send_help(self, key_id):
+        bot_help = ''.join([f'/{x}\n' for x in self.bot_help])
+        bot_help_builtin = ''.join([f'/{x}\n' for x in self.bot_help_builtin])
+        self.tebot.send(f'Usage:\n\n{bot_help}\n{bot_help_builtin}\n' +
+                        f'current API key: {key_id}',
+                        reply_markup=self.reply_markup)
+
+    def h_getcommands(self, **kwargs):
+        self.tebot.send('\n'.join(sorted(self.bot_help +
+                                         self.bot_help_builtin)))
 
     def h_message(self, chat_id, text, **kwargs):
         with self.data_lock:
@@ -134,8 +146,8 @@ class LMExt(GenericExt):
                 with self.data_lock:
                     self.data['auth'][str(chat_id)] = key_id
                     self.data_modified = True
-                self.tebot.send(f'Registered API key: {key_id}',
-                                reply_markup=self.reply_markup)
+                self.tebot.send(f'Registered API key: {key_id}')
+                self._send_help(key_id)
 
     def h_logout(self, chat_id, **kwargs):
         with self.data_lock:

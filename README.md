@@ -64,3 +64,9 @@ Send image to users with API key IDs "operator" and "operator2":
 with open('image.jpg', 'rb') as fh:
     tbot_send(['operator', 'operator2'], media=fh.read())
 ```
+
+## Command autocomplete
+
+After log in, use */getcommands* command, go to [Telegram
+BotFather](https://telegram.me/BotFather), enter */setcommands* and paste it
+as-is.
