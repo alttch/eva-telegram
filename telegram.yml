@@ -10,6 +10,6 @@ wait: 60
 # item format: macro:description
 menu:
   - - test:test macro
-    - test2:test macro2
+    - .test2:test macro2
   - - lights_on:turn the lights on
     - lights_off:turn the lights off

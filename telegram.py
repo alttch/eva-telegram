@@ -80,15 +80,19 @@ class LMExt(GenericExt):
                 menu = config['menu']
                 for row in menu:
                     row_data = []
-                    self.reply_markup['inline_keyboard'].append(row_data)
                     for col in row:
                         data, text = col.split(':', 1)
-                        row_data.append({
-                            'text': text,
-                            'callback_data': f'/{data}'
-                        })
+                        if data.startswith('.'):
+                            data = data[1:]
+                        else:
+                            row_data.append({
+                                'text': text,
+                                'callback_data': f'/{data}'
+                            })
                         self.bot_help.append(f'{data} - {text}')
                         self.bot_commands.append(data)
+                    if row_data:
+                        self.reply_markup['inline_keyboard'].append(row_data)
                 self.bot_commands = sorted(self.bot_commands)
                 self.bot_help = sorted(self.bot_help)
             except:
