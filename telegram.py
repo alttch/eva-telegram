@@ -129,8 +129,7 @@ class LMExt(GenericExt):
                         reply_markup=self.reply_markup)
 
     def h_getcommands(self, **kwargs):
-        self.tebot.send('\n'.join(sorted(self.bot_help +
-                                         self.bot_help_builtin)))
+        self.tebot.send('\n'.join(self.bot_help + self.bot_help_builtin))
 
     def h_message(self, chat_id, text, **kwargs):
         with self.data_lock:
