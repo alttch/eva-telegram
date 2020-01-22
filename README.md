@@ -1,6 +1,6 @@
 # eva-telegram
 
-Telegram bot extension for EVA ICS LM PLC
+Telegram bot extension for [EVA ICS](https://www.eva-ics.com/) LM PLC
 
 Requires EVA ICS 3.3 or newer.
 
@@ -75,3 +75,12 @@ as-is.
 
 To exclude command from the inline keyboard, put dot before macro in "menu"
 section of the configuration.
+
+## Security
+
+* using master key is not recommended
+
+* write dedicated macros
+
+* if possible - use dedicated instance of LM PLC
+
