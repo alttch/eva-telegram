@@ -160,14 +160,18 @@ class LMExt(GenericExt):
         cmd = path[1:]
         if cmd in self.bot_commands:
             try:
-                result = api.run(k=k, i=cmd, a=query_string, w=self.wait)
+                result = api.run(k=k,
+                                 i=cmd,
+                                 a=query_string,
+                                 kw={'chat_id': chat_id},
+                                 w=self.wait)
                 exitcode = result.get('exitcode')
                 if exitcode is None:
                     self.tebot.send(f'{path} is still executing')
                 else:
                     if exitcode:
-                        self.tebot.send('{} execution error:\n{}'.format(
-                            path, result.get('err')))
+                        self.tebot.send(f'{path} execution error',
+                                        reply_markup=self.reply_markup)
                     else:
                         out = result.get('out')
                         self.tebot.send(f'{path} executed' +
@@ -220,9 +224,16 @@ class LMExt(GenericExt):
                 return rcpt
 
     def _send(self, send_func, apikey_id, *args, **kwargs):
-        receipients = self._format_rcpt_list(apikey_id)
-        kwargs = kwargs.copy()
-        for r in receipients:
-            self.log_debug(f'sending message to chat_id {r}')
-            kwargs['chat_id'] = r
-            send_func(*args, **kwargs)
+        if apikey_id is None:
+            if 'chat_id' in kwargs:
+                send_func(*args, **kwargs)
+            else:
+                raise ValueError(
+                    'either apikey_id or chat_id must be specified')
+        else:
+            receipients = self._format_rcpt_list(apikey_id)
+            kwargs = kwargs.copy()
+            for r in receipients:
+                self.log_debug(f'sending message to chat_id {r}')
+                kwargs['chat_id'] = r
+                send_func(*args, **kwargs)

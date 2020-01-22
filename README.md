@@ -24,6 +24,10 @@ eva lm ext load tbot telegram -y
 
 Start chat with your bot and follow the instructions.
 
+* if macros is started as "/macro some args", args are added to macro arguments.
+
+* current *chat_id* is passed into macro kwargs and may be used later.
+
 ## Sending messages from macros
 
 When loaded, e.g. as *tbot*, extension provides functions:
@@ -41,15 +45,22 @@ sent.
 
 ### Examples
 
+Send a message only to user who called macro
+
+```python
+# chat_id variable is available in macro, as it was sent in kwargs
+tbot_send(None, 'this is a reply', chat_id=chat_id)
+```
+
 Send broadcast message to all
 
 ```python
-    tbot_send('*', 'this is a test')
+tbot_send('*', 'this is a test')
 ```
 
 Send image to users with API key IDs "operator" and "operator2":
 
 ```python
-    with open('image.jpg', 'rb') as fh:
-        tbot_send(['operator', 'operator2'], media=fh.read())
+with open('image.jpg', 'rb') as fh:
+    tbot_send(['operator', 'operator2'], media=fh.read())
 ```
