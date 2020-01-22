@@ -72,7 +72,8 @@ class LMExt(GenericExt):
             self.tebot.retry_interval = config.get('retry-interval')
             self.tebot.timeout = get_timeout()
             self.wait = float(config.get('wait', 60))
-            self.reply_markup = {'inline_keyboard': []}
+            keyboard = []
+            self.reply_markup = {'inline_keyboard': keyboard}
             self.bot_commands = []
             self.bot_help = []
             self.bot_help_builtin = ['help - get help', 'logout - log out']
@@ -92,7 +93,7 @@ class LMExt(GenericExt):
                         self.bot_help.append(f'{data} - {text}')
                         self.bot_commands.append(data)
                     if row_data:
-                        self.reply_markup['inline_keyboard'].append(row_data)
+                        keyboard.append(row_data)
                 self.bot_commands = sorted(self.bot_commands)
                 self.bot_help = sorted(self.bot_help)
             except:
